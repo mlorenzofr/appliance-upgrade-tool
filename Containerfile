@@ -18,7 +18,7 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=1 GOFLAGS="" go build -o /usr/bin/upgrade-tool
+RUN CGO_ENABLED=1 GOFLAGS="-buildvcs=false" go build -o /usr/bin/upgrade-tool
 
 # Final image
 FROM registry.access.redhat.com/ubi9/ubi:9.2-489
@@ -33,6 +33,7 @@ ENV ASSETS_DIR=$ASSETS_DIR
 RUN \
     dnf -y install \
     tar \
+    skopeo \
     && \
     dnf -y clean all
 
