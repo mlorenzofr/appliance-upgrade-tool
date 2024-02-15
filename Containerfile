@@ -12,7 +12,22 @@
 # the License.
 #
 
+# Build environment
+FROM registry.access.redhat.com/ubi9/go-toolset:1.20 as builder
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=1 GOFLAGS="" go build -o /usr/bin/upgrade-tool
+
+# Final image
 FROM registry.access.redhat.com/ubi9/ubi:9.2-489
+
+# Create/Mount working directory
+ARG ASSETS_DIR=/assets
+RUN mkdir $ASSETS_DIR && chmod 775 $ASSETS_DIR
+VOLUME $ASSETS_DIR
+ENV ASSETS_DIR=$ASSETS_DIR
 
 # Install the required packages:
 RUN \
@@ -21,5 +36,13 @@ RUN \
     && \
     dnf -y clean all
 
+# Download oc
+RUN curl -sL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz \
+    | tar xvzf - -C /usr/local/bin && \
+    chmod +x /usr/local/bin/oc
+
 # Install the tool:
-COPY upgrade-tool /usr/bin
+COPY --from=builder /usr/bin/upgrade-tool /usr/bin/upgrade-tool
+
+WORKDIR $ASSETS_DIR
+ENTRYPOINT ["/usr/bin/upgrade-tool"]
