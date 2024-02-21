@@ -168,17 +168,11 @@ func (t *CRIOTool) CreateMirrorConf(mirror string, refs []string) error {
 	}
 	names := maps.Keys(index)
 	slices.Sort(names)
-	for _, name := range names {
-		named := index[name]
-		path := dreference.Path(named)
-		fmt.Fprintf(buffer, "[[registry]]\n")
-		fmt.Fprintf(buffer, "location = \"%s\"\n", name)
-		fmt.Fprintf(buffer, "\n")
-		fmt.Fprintf(buffer, "[[registry.mirror]]\n")
-		fmt.Fprintf(buffer, "location = \"%s/%s\"\n", mirror, path)
-		fmt.Fprintf(buffer, "insecure = true\n")
-		fmt.Fprintf(buffer, "\n")
-	}
+	fmt.Fprintf(buffer, "[[registry]]\n")
+	fmt.Fprintf(buffer, "prefix = \"quay.io\"\n")
+	fmt.Fprintf(buffer, "location = \"%s\"\n", mirror)
+	fmt.Fprintf(buffer, "insecure = true\n")
+	fmt.Fprintf(buffer, "\n")
 	file := t.absolutePath(crioMirrorConf)
 	data := buffer.Bytes()
 	err := os.WriteFile(file, data, 0644)
@@ -290,10 +284,10 @@ func (t *CRIOTool) PullImage(ctx context.Context, ref string) error {
 	}
 	for _, img := range listReply.Images {
 		t.logger.Info(
-			"Image in CRI-O cache",
+			"CRI-O cache",
 			"ID", img.Id,
 			"Pinned", img.Pinned,
-			"Size", img.Size,
+			"Repo Digest", img.RepoDigests[0],
 		)
 	}
 
