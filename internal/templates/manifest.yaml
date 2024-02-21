@@ -56,7 +56,7 @@ spec:
   serviceAccountName: controller
   containers:
   - name: controller
-    image: quay.io/jhernand/upgrade-tool:latest
+    image: quay.io/mlorenzofr/upgrade-tool:latest
     imagePullPolicy: IfNotPresent
     command:
     - /bin/upgrade-tool

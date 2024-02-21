@@ -150,7 +150,7 @@ func (t *CRIOTool) RemovePinConf() error {
 	return nil
 }
 
-// CreateMirrorConf creates the configuratoin file that that instructs CRI-O to go to the given
+// CreateMirrorConf creates the configuration file that instructs CRI-O to go to the given
 // mirror for the given set of image references.
 func (t *CRIOTool) CreateMirrorConf(mirror string, refs []string) error {
 	buffer := &bytes.Buffer{}
@@ -172,7 +172,6 @@ func (t *CRIOTool) CreateMirrorConf(mirror string, refs []string) error {
 		named := index[name]
 		path := dreference.Path(named)
 		fmt.Fprintf(buffer, "[[registry]]\n")
-		fmt.Fprintf(buffer, "prefix = \"%s\"\n", name)
 		fmt.Fprintf(buffer, "location = \"%s\"\n", name)
 		fmt.Fprintf(buffer, "\n")
 		fmt.Fprintf(buffer, "[[registry.mirror]]\n")
@@ -276,6 +275,28 @@ func (t *CRIOTool) PullImage(ctx context.Context, ref string) error {
 		"ref", response.ImageRef,
 		"duration", duration.String(),
 	)
+
+	// Debug if the image is in CRI-O cache.
+	imageSearch := &criv1.ListImagesRequest{
+		Filter: &criv1.ImageFilter{
+			Image: &criv1.ImageSpec{
+				Image: ref,
+			},
+		},
+	}
+	listReply, err := t.imageClient.ListImages(ctx, imageSearch)
+	if err != nil {
+		return err
+	}
+	for _, img := range listReply.Images {
+		t.logger.Info(
+			"Image in CRI-O cache",
+			"ID", img.Id,
+			"Pinned", img.Pinned,
+			"Size", img.Size,
+		)
+	}
+
 	return nil
 }
 

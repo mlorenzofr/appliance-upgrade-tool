@@ -1120,7 +1120,7 @@ const (
 	controllerHostVolumePath      = "/"
 	controllerHostVolumeMountPath = "/host"
 
-	controllerImage           = "quay.io/jhernand/upgrade-tool:latest"
+	controllerImage           = "quay.io/mlorenzofr/upgrade-tool:latest"
 	controllerImagePullPolicy = corev1.PullIfNotPresent
 
 	bundleCleaner   = "bundle-cleaner"
